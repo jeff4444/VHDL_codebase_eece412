@@ -18,10 +18,14 @@
   <File Type="BITSTR-MMI" Name="Index.mmi"/>
   <File Type="ROUTE-METHODOLOGY-DRC" Name="Index_methodology_drc_routed.rpt"/>
   <File Type="BITSTR-SYSDEF" Name="Index.sysdef"/>
+  <File Type="ROUTE-METHODOLOGY-DRC-PB" Name="Index_methodology_drc_routed.pb"/>
   <File Type="BITSTR-LTX" Name="debug_nets.ltx"/>
   <File Type="BITSTR-LTX" Name="Index.ltx"/>
+  <File Type="BOOT-PDI-FILE" Name="Index_boot.pdi"/>
   <File Type="WBT-USG" Name="usage_statistics_webtalk.html"/>
+  <File Type="NPI_FILE" Name="Index.npi"/>
   <File Type="OPT-DRC" Name="Index_drc_opted.rpt"/>
+  <File Type="RBD_FILE" Name="Index.rbd"/>
   <File Type="OPT-HWDEF" Name="Index.hwdef"/>
   <File Type="PLACE-IO" Name="Index_io_placed.rpt"/>
   <File Type="PLACE-UTIL" Name="Index_utilization_placed.rpt"/>
@@ -55,17 +59,13 @@
   <File Type="POSTROUTE-PHYSOPT-TIMING-RPX" Name="Index_timing_summary_postroute_physopted.rpx"/>
   <File Type="POSTROUTE-PHYSOPT-BUS-SKEW" Name="Index_bus_skew_postroute_physopted.rpt"/>
   <File Type="POSTROUTE-PHYSOPT-BUS-SKEW-RPX" Name="Index_bus_skew_postroute_physopted.rpx"/>
-  <File Type="ROUTE-METHODOLOGY-DRC-PB" Name="Index_methodology_drc_routed.pb"/>
   <File Type="ROUTE-DRC-RPX" Name="Index_drc_routed.rpx"/>
   <File Type="ROUTE-METHODOLOGY-DRC-RPX" Name="Index_methodology_drc_routed.rpx"/>
   <File Type="PDI-FILE" Name="Index.pdi"/>
-  <File Type="BOOT-PDI-FILE" Name="Index_boot.pdi"/>
   <File Type="PL-PDI-FILE" Name="Index_pld.pdi"/>
   <File Type="RCFI_FILE" Name="Index.rcfi"/>
   <File Type="CFI_FILE" Name="Index.cfi"/>
   <File Type="RNPI_FILE" Name="Index.rnpi"/>
-  <File Type="NPI_FILE" Name="Index.npi"/>
-  <File Type="RBD_FILE" Name="Index.rbd"/>
   <File Type="ROUTE-RQS" Name="Index_routed.rqs"/>
   <File Type="POSTROUTE-PHYSOPT-RQS" Name="Index_postroute_physopted.rqs"/>
   <File Type="ROUTE-RQS-RPT" Name="route_report_qor_suggestions_0.rpt"/>
