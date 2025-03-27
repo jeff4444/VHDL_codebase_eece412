@@ -16,4 +16,4 @@ architecture rtl of decoder_2to4_enable is
            "0100" when (inp = "10" and e = '1') else
            "1000" when (inp = "11" and e = '1') else
            "0000";
-end rtl;›
+end rtl;
