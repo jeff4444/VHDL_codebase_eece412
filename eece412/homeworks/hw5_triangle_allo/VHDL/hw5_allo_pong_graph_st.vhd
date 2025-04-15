@@ -80,8 +80,8 @@ architecture sq_ball_arch of pong_graph_st is
     signal tri_x_delta_reg, tri_x_delta_next : unsigned(9 downto 0);
     signal tri_y_delta_reg, tri_y_delta_next : unsigned(9 downto 0);
     -- triangle movement can be pos or neg
-    constant TRIANGLE_V_P : unsigned(9 downto 0) := to_unsigned(2, 10);
-    constant TRIANGLE_V_N : unsigned(9 downto 0) := unsigned(to_signed(-2, 10));
+    constant TRIANGLE_V_P : unsigned(9 downto 0) := to_unsigned(4, 10);
+    constant TRIANGLE_V_N : unsigned(9 downto 0) := unsigned(to_signed(-4, 10));
     -- round triangle image
     type tri_rom_type is array(0 to 15) of std_logic_vector(0 to 15);
     constant TRIANGLE_ROM : tri_rom_type := (
