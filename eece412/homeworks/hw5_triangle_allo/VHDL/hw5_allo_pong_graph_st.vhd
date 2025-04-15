@@ -244,9 +244,9 @@ begin
     -- map scan coord to ROM addr/col -- use low order three
     -- bits of pixel and triangle positions.
     -- ROM row
-    tri_rom_addr <= pix_y(2 downto 0) - triangle_y_t(2 downto 0);
+    tri_rom_addr <= pix_y(3 downto 0) - triangle_y_t(3 downto 0);
     -- ROM column
-    tri_rom_col <= pix_x(2 downto 0) - triangle_x_l(2 downto 0);
+    tri_rom_col <= pix_x(3 downto 0) - triangle_x_l(3 downto 0);
     -- Get row data
     tri_rom_data <= TRIANGLE_ROM(to_integer(tri_rom_addr));
     -- Get column bit
