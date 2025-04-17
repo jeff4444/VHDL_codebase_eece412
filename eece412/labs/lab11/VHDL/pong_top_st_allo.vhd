@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 entity pong_top_st is
     port (
         clk, reset : in std_logic;
-        btn : in std_logic_vector(1 downto 0);
+        btn : in std_logic_vector(3 downto 0);
         hsync, vsync : out std_logic;
         --rgb_8bit: out std_logic_vector(23 downto 0);
         rgb_top : out std_logic_vector(2 downto 0);
