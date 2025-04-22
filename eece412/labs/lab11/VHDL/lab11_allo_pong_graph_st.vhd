@@ -26,20 +26,20 @@ architecture sq_ball_arch of pong_graph_st is
     constant WALL_X_L : integer := 32;
     constant WALL_X_R : integer := 35;
     -- paddle left, right, top, bottom and height left &
-    -- right are constant. top & bottom are signals to
-    -- allow movement. bar_y_t driven by reg below.
-    -- constant BAR_X_L : integer := 600;
-    -- constant BAR_X_R : integer := 603;
-    signal bar_y_t, bar_y_b : unsigned(9 downto 0);
-    signal bar_x_l, bar_x_r : unsigned(9 downto 0);
-    constant BAR_Y_SIZE : integer := 72;
-    constant BAR_X_SIZE : integer := 3;
+    -- right, ›top & bottom are signals to
+    -- allow movement. spaceship_y_t driven by reg below.
+    -- constant spaceship_X_L : integer := 600;
+    -- constant spaceship_X_R : integer := 603;
+    signal spaceship_y_t, spaceship_y_b : unsigned(9 downto 0);
+    signal spaceship_x_l, spaceship_x_r : unsigned(9 downto 0);
+    constant SPACESHIP_Y_SIZE : integer := 16;
+    constant SPACESHIP_X_SIZE : integer := 16;
     -- reg to track top boundary (x position is fixed)
-    signal bar_y_reg, bar_y_next, bar_x_reg, bar_x_next : unsigned(9 downto 0);
-    -- bar moving velocity when a button is pressed
-    -- the amount the bar is moved.
-    constant BAR_V : integer := 4;
-    constant BAR_H : integer := 4;
+    signal spaceship_y_reg, spaceship_y_next, spaceship_x_reg, spaceship_x_next : unsigned(9 downto 0);
+    -- spaceship moving velocity when a button is pressed
+    -- the amount the spaceship is moved.
+    constant SPACESHIP_V : integer := 4;
+    constant SPACESHIP_H : integer := 4;
     -- square ball -- ball left, right, top and bottom
     -- all vary. Left and top driven by registers below.
     constant BALL_SIZE : integer := 8;
@@ -65,27 +65,48 @@ architecture sq_ball_arch of pong_graph_st is
         "11111111",
         "01111110",
         "00111100");
+
+    -- spaceship image
+    type rom_type2 is array(0 to 15) of std_logic_vector(0 to 15);
+    constant SPACESHIP_ROM : rom_type2 := (
+        "0000000000000000", -- row  0
+        "0000000000000000", -- row  1
+        "0000011000000000", -- row  2  (nose tip)
+        "0000111100000000", -- row  3
+        "0001111110000000", -- row  4
+        "0011111111000000", -- row  5
+        "0111110111100000", -- row  6  (big porthole at bits 6–8)
+        "0111111111100001", -- row  7  (body + top tail-fin at bit 0)
+        "0011111111000001", -- row  8  (body + bottom tail-fin)
+        "0001110110000000", -- row  9  (small porthole at bits 5–6)
+        "0000111100000000", -- row 10
+        "0000011000000000", -- row 11
+        "0000000000000000", -- row 12
+        "0000000000000000", -- row 13
+        "0000000000000000", -- row 14
+        "0000000000000000" -- row 15
+    );
     signal rom_addr, rom_col : unsigned(2 downto 0);
     signal rom_data : std_logic_vector(7 downto 0);
-    signal rom_bit : std_logic;
+    signal rom_bit, spaceship_rom_bit : std_logic;
     -- object output signals -- new signal to indicate if
     -- scan coord is within ball
-    signal wall_on, bar_on, sq_ball_on, rd_ball_on : std_logic;
-    signal wall_rgb, bar_rgb, ball_rgb : std_logic_vector(2 downto 0);
+    signal wall_on, spaceship_on, sq_ball_on, rd_ball_on : std_logic;
+    signal wall_rgb, spaceship_rgb, ball_rgb : std_logic_vector(2 downto 0);
     -- ====================================================
 begin
     process (clk, reset)
     begin
         if (reset = '1') then
-            bar_y_reg <= (others => '0');
-            bar_x_reg <= ("1001011000");
+            spaceship_y_reg <= (others => '0');
+            spaceship_x_reg <= ("1001011000"); -- x = 600
             ball_x_reg <= (others => '0');
             ball_y_reg <= (others => '0');
             x_delta_reg <= ("0000000100");
             y_delta_reg <= ("0000000100");
         elsif (rising_edge(clk)) then
-            bar_y_reg <= bar_y_next;
-            bar_x_reg <= bar_x_next;
+            spaceship_y_reg <= spaceship_y_next;
+            spaceship_x_reg <= spaceship_x_next;
             ball_x_reg <= ball_x_next;
             ball_y_reg <= ball_y_next;
             x_delta_reg <= x_delta_next;
@@ -105,35 +126,40 @@ begin
         '0';
     wall_rgb <= "001"; -- blue
     -- pixel within paddle
-    bar_y_t <= bar_y_reg;
-    bar_x_l <= bar_x_reg;
-    bar_y_b <= bar_y_t + BAR_Y_SIZE - 1;
-    bar_x_r <= bar_x_l + BAR_X_SIZE - 1;
-    bar_on <= '1' when (bar_x_l <= pix_x) and
-        (pix_x <= bar_x_r) and (bar_y_t <= pix_y) and
-        (pix_y <= bar_y_b) else
+    spaceship_y_t <= spaceship_y_reg;
+    spaceship_x_l <= spaceship_x_reg;
+    spaceship_y_b <= spaceship_y_t + SPACESHIP_Y_SIZE - 1;
+    spaceship_x_r <= spaceship_x_l + SPACESHIP_X_SIZE - 1;
+
+    -- spaceship rom bit
+    spaceship_rom_bit <= SPACESHIP_ROM(to_integer(pix_y(2 downto 0) - spaceship_y_t(2 downto 0)))(to_integer(pix_x(2 downto 0) - spaceship_x_l(2 downto 0)));
+
+    spaceship_on <= '1' when (spaceship_x_l <= pix_x) and
+        (pix_x <= spaceship_x_r) and (spaceship_y_t <= pix_y) and
+        (pix_y <= spaceship_y_b) and spaceship_rom_bit = '1' else
         '0';
-    bar_rgb <= "010"; -- green
-    -- Process bar movement requests
-    process (bar_y_reg, bar_y_b, bar_y_t, bar_x_reg, bar_x_l, bar_x_r, refr_tick, btn)
+    spaceship_rgb <= "010"; -- green
+    -- Process spaceship movement requests
+    process (spaceship_y_reg, spaceship_y_b, spaceship_y_t, spaceship_x_reg, spaceship_x_l, spaceship_x_r, refr_tick, btn)
     begin
-        bar_y_next <= bar_y_reg; -- no move
+        spaceship_y_next <= spaceship_y_reg; -- no move
+        spaceship_x_next <= spaceship_x_reg; -- no move
         if (refr_tick = '1') then
             -- if btn 1 pressed and paddle not at bottom yet
-            if (btn(1) = '1' and bar_y_b <
-                (MAX_Y - 1 - BAR_V)) then
-                bar_y_next <= bar_y_reg + BAR_V;
-                -- if btn 0 pressed and bar not at top yet
-            elsif (btn(0) = '1' and bar_y_t > BAR_V) then
-                bar_y_next <= bar_y_reg - BAR_V;
+            if (btn(1) = '1' and spaceship_y_b <
+                (MAX_Y - 1 - spaceship_V)) then
+                spaceship_y_next <= spaceship_y_reg + spaceship_V;
+                -- if btn 0 pressed and spaceship not at top yet
+            elsif (btn(0) = '1' and spaceship_y_t > spaceship_V) then
+                spaceship_y_next <= spaceship_y_reg - spaceship_V;
             end if;
             -- if btn 1 pressed and paddle not at bottom yet
-            if (btn(3) = '1' and bar_x_r <
-                (MAX_X - 1 - BAR_H)) then
-                bar_x_next <= bar_x_reg + BAR_H;
-                -- if btn 0 pressed and bar not at top yet
-            elsif (btn(2) = '1' and bar_x_l > BAR_H) then
-                bar_x_next <= bar_x_reg - BAR_H;
+            if (btn(3) = '1' and spaceship_x_r <
+                (MAX_X - 1 - spaceship_H)) then
+                spaceship_x_next <= spaceship_x_reg + spaceship_H;
+                -- if btn 0 pressed and spaceship not at top yet
+            elsif (btn(2) = '1' and spaceship_x_l > SPACESHIP_H) then
+                spaceship_x_next <= spaceship_x_reg - SPACESHIP_H;
             end if;
         end if;
     end process;
@@ -172,7 +198,7 @@ begin
     -- Set the value of the next ball position according to
     -- the boundaries.
     process (x_delta_reg, y_delta_reg, ball_y_t, ball_x_l,
-        ball_x_r, ball_y_t, ball_y_b, bar_y_t, bar_y_b)
+        ball_x_r, ball_y_t, ball_y_b, spaceship_y_t, spaceship_y_b)
     begin
         x_delta_next <= x_delta_reg;
         y_delta_next <= y_delta_reg;
@@ -185,26 +211,26 @@ begin
             -- reach wall, bounce back
         elsif (ball_x_l <= WALL_X_R) then
             x_delta_next <= BALL_V_P;
-            -- right corner of ball inside bar
-        elsif ((BAR_X_L <= ball_x_r) and
-            (ball_x_r <= BAR_X_R)) then
+            -- right corner of ball inside spaceship
+        elsif ((spaceship_X_L <= ball_x_r) and
+            (ball_x_r <= spaceship_X_R)) then
             -- some portion of ball hitting paddle, reverse dir
-            if ((bar_y_t <= ball_y_b) and
-                (ball_y_t <= bar_y_b)) then
+            if ((spaceship_y_t <= ball_y_b) and
+                (ball_y_t <= spaceship_y_b)) then
                 x_delta_next <= BALL_V_N;
             end if;
         end if;
     end process;
-    process (video_on, wall_on, bar_on, rd_ball_on,
-        wall_rgb, bar_rgb, ball_rgb)
+    process (video_on, wall_on, spaceship_on, rd_ball_on,
+        wall_rgb, spaceship_rgb, ball_rgb)
     begin
         if (video_on = '0') then
             graph_rgb <= "000"; -- blank
         else
             if (wall_on = '1') then
                 graph_rgb <= wall_rgb;
-            elsif (bar_on = '1') then
-                graph_rgb <= bar_rgb;
+            elsif (spaceship_on = '1') then
+                graph_rgb <= spaceship_rgb;
             elsif (rd_ball_on = '1') then
                 graph_rgb <= ball_rgb;
             else
