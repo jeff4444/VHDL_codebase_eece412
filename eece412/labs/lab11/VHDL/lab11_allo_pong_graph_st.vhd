@@ -93,7 +93,7 @@ architecture sq_ball_arch of pong_graph_st is
     -- reg to track left boundary
     signal firing_ball_x_reg, firing_ball_x_next : unsigned(9 downto 0);
 
-    
+
     signal rom_addr, rom_col : unsigned(2 downto 0);
     signal rom_data : std_logic_vector(7 downto 0);
     signal rom_bit, spaceship_rom_bit, firing_ball_rom_bit : std_logic;
@@ -113,7 +113,7 @@ begin
             x_delta_reg <= ("0000000100");
             y_delta_reg <= ("0000000100");
             firing_ball_x_reg <= (others => '0');
-            firing_ball_y_reg <= (others => '0');
+            firing_ball_y_t <= (others => '0');
         elsif (rising_edge(clk)) then
             spaceship_y_reg <= spaceship_y_next;
             spaceship_x_reg <= spaceship_x_next;
@@ -177,7 +177,6 @@ begin
 
     -- firing ball left, right, top and bottom
     firing_ball_x_l <= firing_ball_x_reg;
-    firing_ball_y_t <= firing_ball_y_reg;
     firing_ball_x_r <= firing_ball_x_l + BALL_SIZE - 1;
     firing_ball_y_b <= firing_ball_y_t + BALL_SIZE - 1;
 
