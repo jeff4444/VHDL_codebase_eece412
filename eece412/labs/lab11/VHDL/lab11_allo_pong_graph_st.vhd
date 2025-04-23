@@ -132,7 +132,7 @@ begin
     spaceship_x_r <= spaceship_x_l + SPACESHIP_X_SIZE - 1;
 
     -- spaceship rom bit
-    spaceship_rom_bit <= SPACESHIP_ROM(to_integer(pix_y(2 downto 0) - spaceship_y_t(2 downto 0)))(to_integer(pix_x(2 downto 0) - spaceship_x_l(2 downto 0)));
+    spaceship_rom_bit <= SPACESHIP_ROM(to_integer(pix_y(3 downto 0) - spaceship_y_t(3 downto 0)))(to_integer(pix_x(3 downto 0) - spaceship_x_l(3 downto 0)));
 
     spaceship_on <= '1' when (spaceship_x_l <= pix_x) and
         (pix_x <= spaceship_x_r) and (spaceship_y_t <= pix_y) and
