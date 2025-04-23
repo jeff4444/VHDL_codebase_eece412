@@ -6,7 +6,7 @@ use ieee.numeric_std.all;
 entity pong_graph_st is
     port (
         clk, reset : in std_logic;
-        btn : in std_logic_vector(3 downto 0);
+        btn : in std_logic_vector(4 downto 0);
         video_on : in std_logic;
         pixel_x, pixel_y : in std_logic_vector(9 downto 0);
         graph_rgb : out std_logic_vector(2 downto 0)
@@ -86,13 +86,21 @@ architecture sq_ball_arch of pong_graph_st is
         "0000000000000000", -- row 14
         "0000000000000000" -- row 15
     );
+
+    -- signals for the firing ball
+    signal firing_ball_x_l, firing_ball_x_r : unsigned(9 downto 0);
+    signal firing_ball_y_t, firing_ball_y_b : unsigned(9 downto 0);
+    -- reg to track left boundary
+    signal firing_ball_x_reg, firing_ball_x_next : unsigned(9 downto 0);
+
+    
     signal rom_addr, rom_col : unsigned(2 downto 0);
     signal rom_data : std_logic_vector(7 downto 0);
-    signal rom_bit, spaceship_rom_bit : std_logic;
+    signal rom_bit, spaceship_rom_bit, firing_ball_rom_bit : std_logic;
     -- object output signals -- new signal to indicate if
     -- scan coord is within ball
-    signal wall_on, spaceship_on, sq_ball_on, rd_ball_on : std_logic;
-    signal wall_rgb, spaceship_rgb, ball_rgb : std_logic_vector(2 downto 0);
+    signal wall_on, spaceship_on, sq_ball_on, rd_ball_on, firing_ball_on : std_logic;
+    signal wall_rgb, spaceship_rgb, ball_rgb, firing_ball_rgb : std_logic_vector(2 downto 0);
     -- ====================================================
 begin
     process (clk, reset)
@@ -104,6 +112,8 @@ begin
             ball_y_reg <= (others => '0');
             x_delta_reg <= ("0000000100");
             y_delta_reg <= ("0000000100");
+            firing_ball_x_reg <= (others => '0');
+            firing_ball_y_reg <= (others => '0');
         elsif (rising_edge(clk)) then
             spaceship_y_reg <= spaceship_y_next;
             spaceship_x_reg <= spaceship_x_next;
@@ -111,6 +121,7 @@ begin
             ball_y_reg <= ball_y_next;
             x_delta_reg <= x_delta_next;
             y_delta_reg <= y_delta_next;
+            firing_ball_x_reg <= firing_ball_x_next;
         end if;
     end process;
     pix_x <= unsigned(pixel_x);
@@ -125,7 +136,7 @@ begin
         (pix_x <= WALL_X_R) else
         '0';
     wall_rgb <= "001"; -- blue
-    -- pixel within paddle
+    -- pixel within spaceship
     spaceship_y_t <= spaceship_y_reg;
     spaceship_x_l <= spaceship_x_reg;
     spaceship_y_b <= spaceship_y_t + SPACESHIP_Y_SIZE - 1;
@@ -160,6 +171,43 @@ begin
                 -- if btn 0 pressed and spaceship not at top yet
             elsif (btn(2) = '1' and spaceship_x_l > SPACESHIP_H) then
                 spaceship_x_next <= spaceship_x_reg - SPACESHIP_H;
+            end if;
+        end if;
+    end process;
+
+    -- firing ball left, right, top and bottom
+    firing_ball_x_l <= firing_ball_x_reg;
+    firing_ball_y_t <= firing_ball_y_reg;
+    firing_ball_x_r <= firing_ball_x_l + BALL_SIZE - 1;
+    firing_ball_y_b <= firing_ball_y_t + BALL_SIZE - 1;
+
+    firing_ball_rom_bit <= BALL_ROM(to_integer(pix_y(2 downto 0) - firing_ball_y_t(2 downto 0)))(to_integer(pix_x(2 downto 0) - firing_ball_x_l(2 downto 0)));
+    firing_ball_on <= '1' when (firing_ball_x_l <= pix_x) and
+        (pix_x <= firing_ball_x_r) and (firing_ball_y_t <= pix_y) and
+        (pix_y <= firing_ball_y_b) and firing_ball_rom_bit = '1' else
+        '0';
+    firing_ball_rgb <= "111"; -- white
+    -- firing ball movement
+    --Process block that implements launching and movement of firing_ball
+    -- You can use btn(4) if you already have used 4 btns
+    process (firing_ball_x_reg, firing_ball_y_reg, refr_tick, btn(4),
+        bar_y_reg)
+    begin
+        -- Default output values below
+        if (refr_tick = '1') then
+            -- Write your VHDL below
+            -- Check if firing btn is pressed, if yes then set the starting location
+            -- of firing ball to the bar (bar_x, bar_y)
+            if (btn(4) = '1') then
+                firing_ball_x_next <= spaceship_x_reg + 4;
+                firing_ball_y_t <= spaceship_y_reg;
+            elsif (firing_ball_x_reg > 0) then
+                -- Otherwise check if the firing ball is within visible screen area,
+                -- if so then reduce x coordinate value of firing ball by “BALL_V_P”
+                -- to move the firing ball horizontally from right to left
+                firing_ball_x_next <= firing_ball_x_reg - BALL_V_P;
+            else
+                firing_ball_x_next <= firing_ball_x_reg;
             end if;
         end if;
     end process;
