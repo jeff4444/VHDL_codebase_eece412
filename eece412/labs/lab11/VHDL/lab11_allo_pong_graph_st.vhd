@@ -189,8 +189,8 @@ begin
     -- firing ball movement
     --Process block that implements launching and movement of firing_ball
     -- You can use btn(4) if you already have used 4 btns
-    process (firing_ball_x_reg, firing_ball_y_reg, refr_tick, btn(4),
-        bar_y_reg)
+    process (firing_ball_x_reg, refr_tick, btn(4),
+        spaceship_x_reg, spaceship_y_reg)
     begin
         -- Default output values below
         if (refr_tick = '1') then
