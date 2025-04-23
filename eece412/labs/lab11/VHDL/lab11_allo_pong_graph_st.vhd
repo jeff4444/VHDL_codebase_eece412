@@ -92,8 +92,8 @@ architecture sq_ball_arch of pong_graph_st is
     signal firing_ball_y_t, firing_ball_y_b : unsigned(9 downto 0);
     -- reg to track left boundary
     signal firing_ball_x_reg, firing_ball_x_next : unsigned(9 downto 0);
-
-
+    signal firing_ball_y_reg : unsigned(9 downto 0);
+    signal firing_ball_y_next : unsigned(9 downto 0);
     signal rom_addr, rom_col : unsigned(2 downto 0);
     signal rom_data : std_logic_vector(7 downto 0);
     signal rom_bit, spaceship_rom_bit, firing_ball_rom_bit : std_logic;
@@ -113,7 +113,7 @@ begin
             x_delta_reg <= ("0000000100");
             y_delta_reg <= ("0000000100");
             firing_ball_x_reg <= (others => '0');
-            firing_ball_y_t <= (others => '0');
+            firing_ball_y_reg <= (others => '0');
         elsif (rising_edge(clk)) then
             spaceship_y_reg <= spaceship_y_next;
             spaceship_x_reg <= spaceship_x_next;
@@ -122,6 +122,7 @@ begin
             x_delta_reg <= x_delta_next;
             y_delta_reg <= y_delta_next;
             firing_ball_x_reg <= firing_ball_x_next;
+            firing_ball_y_reg <= firing_ball_y_next;
         end if;
     end process;
     pix_x <= unsigned(pixel_x);
@@ -177,6 +178,7 @@ begin
 
     -- firing ball left, right, top and bottom
     firing_ball_x_l <= firing_ball_x_reg;
+    firing_ball_y_t <= firing_ball_y_reg;
     firing_ball_x_r <= firing_ball_x_l + BALL_SIZE - 1;
     firing_ball_y_b <= firing_ball_y_t + BALL_SIZE - 1;
 
@@ -189,8 +191,8 @@ begin
     -- firing ball movement
     --Process block that implements launching and movement of firing_ball
     -- You can use btn(4) if you already have used 4 btns
-    process (firing_ball_x_reg, refr_tick, btn(4),
-        spaceship_x_reg, spaceship_y_reg)
+    process (firing_ball_x_reg, firing_ball_y_reg, refr_tick, btn(4),
+        bar_y_reg)
     begin
         -- Default output values below
         if (refr_tick = '1') then
@@ -199,14 +201,16 @@ begin
             -- of firing ball to the bar (bar_x, bar_y)
             if (btn(4) = '1') then
                 firing_ball_x_next <= spaceship_x_reg + 4;
-                firing_ball_y_t <= spaceship_y_reg;
+                firing_ball_y_next <= spaceship_y_reg;
             elsif (firing_ball_x_reg > 0) then
                 -- Otherwise check if the firing ball is within visible screen area,
                 -- if so then reduce x coordinate value of firing ball by “BALL_V_P”
                 -- to move the firing ball horizontally from right to left
                 firing_ball_x_next <= firing_ball_x_reg - BALL_V_P;
+                firing_ball_y_next <= firing_ball_y_reg;
             else
                 firing_ball_x_next <= firing_ball_x_reg;
+                firing_ball_y_next <= firing_ball_y_reg;
             end if;
         end if;
     end process;
